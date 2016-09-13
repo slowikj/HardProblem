@@ -4,6 +4,77 @@
 
 using namespace std;
 
+class ReversableString
+{
+private:
+	string str, revStr;
+
+public:
+	ReversableString(const string& s)
+		: str(s)
+	{
+		this->revStr = s;
+		reverse(this->revStr.begin(), this->revStr.end());
+	}
+
+	const string& String () const
+	{
+		return this->str;
+	}
+
+	const string& ReversedString () const
+	{
+		return this->revStr;
+	}
+};
+
+struct PrefixResult
+{
+	long long lastUnreversed;
+	long long lastReversed;
+
+	PrefixResult ()
+	{
+	}
+
+	PrefixResult (long long unreversed, long long reversed)
+		: lastUnreversed(unreversed), lastReversed(reversed)
+	{
+	}
+};
+
+class PrefixInfo
+{
+	ReversableString lastString;
+	PrefixResult result;
+
+public:
+	PrefixInfo (const string& last, const PrefixResult& pr)
+		: lastString(last), result(pr)
+	{
+	}
+
+	const string& LastString () const
+	{
+		return this->lastString.String();
+	}
+
+	const string& LastStringReversed () const
+	{
+		return this->lastString.ReversedString();
+	}
+
+	long long ResultWithUnreversedEnd () const
+	{
+		return this->result.lastUnreversed;
+	}
+
+	long long ResultWithReversedEnd () const
+	{
+		return this->result.lastReversed;
+	}
+};
+
 class TaskSolver
 {
 private:
@@ -14,11 +85,10 @@ private:
 
 	int *cost;
 	string *str;
-	string *revStr;
 	int numberOfStrings;
 	long long result;
 
-	string* GetStringsCopy (const int& numberOfStrings, string *str)
+	string* GetStringsCopy (const int& numberOfStrings, string *str) const
 	{
 		string *copiedStr = new string[numberOfStrings];
 		for (int i = 0; i < numberOfStrings; ++i)
@@ -27,14 +97,14 @@ private:
 		return copiedStr;
 	}
 
-	int* GetCostsCopy (const int& numberOfStrings, int *cost)
+	int* GetCostsCopy (const int& numberOfStrings, int *cost) const
 	{
 		int *copiedCosts = new int[numberOfStrings];
 		for (int i = 0; i < numberOfStrings; ++i)
 			copiedCosts[i] = cost[i];
 
 		return copiedCosts;
-	}		
+	}	
 
 public:
 	TaskSolver (const int& numberOfStrings, int *cost, string *str)
@@ -43,7 +113,35 @@ public:
 		this->str = this->GetStringsCopy(numberOfStrings, str);
 		this->cost = this->GetCostsCopy(numberOfStrings, cost);
 
-		this->revStr = nullptr;
+		this->result = NOT_COMPUTED;
+	}
+
+private:
+	int* ReadCosts ()
+	{
+		int *res = new int[this->numberOfStrings];
+		for (int i = 0; i < this->numberOfStrings; ++i)
+			cin >> res[i];
+
+		return res;
+	}
+
+	string* ReadStrings ()
+	{
+		string *res = new string[this->numberOfStrings];
+		for (int i = 0; i < this->numberOfStrings; ++i)
+			cin >> res[i];
+
+		return res;
+	}
+
+public:
+	TaskSolver ()
+	{
+		cin >> this->numberOfStrings;
+		this->cost = this->ReadCosts();
+		this->str = this->ReadStrings();
+
 		this->result = NOT_COMPUTED;
 	}
 
@@ -51,125 +149,81 @@ public:
 	{
 		delete[] this->cost;
 		delete[] this->str;
-
-		if (this->revStr)
-			delete[] this->revStr;
 	}
 
 private:
-	struct PrefixResult
-	{
-		long long lastUnreversed;
-		long long lastReversed;
-
-		PrefixResult (long long unreversed = INF, long long reversed = INF)
-			: lastUnreversed(unreversed), lastReversed(reversed)
-		{
-		}
-	};
-
-	long long GetResultForPrefixWithUnreversedEnd (const int& endIndex,
-												   const PrefixResult& previousPrefix)
+	long long PrefixResultWithUnreversedEnd (const PrefixInfo& previousPrefix,
+											 const ReversableString& lastStr) const
 	{
 		long long res = INF;
 
-		if (this->str[endIndex] >= this->str[endIndex - 1])
+		if (lastStr.String() >= previousPrefix.LastString())
 			res = min(res,
-					  previousPrefix.lastUnreversed);
+					  previousPrefix.ResultWithUnreversedEnd());
 
-		if (this->str[endIndex] >= this->revStr[endIndex - 1])
+		if (lastStr.String() >= previousPrefix.LastStringReversed())
 			res = min(res,
-					  previousPrefix.lastReversed);
+					  previousPrefix.ResultWithReversedEnd());
 
 		return res;
 	}	
 
-	long long GetResultForPrefixWithReversedEnd (const int& endIndex,
-												 const PrefixResult& previousPrefix)
+	long long PrefixResultWithReversedEnd (const PrefixInfo& previousPrefix,
+										   const ReversableString& lastString,
+									 	   const int& ind) const
 	{
 		long long res = INF;
 
-		if (this->revStr[endIndex] >= this->str[endIndex - 1])
+		if (lastString.ReversedString() >= previousPrefix.LastString())
 			res = min(res,
-					  previousPrefix.lastUnreversed
-						+ this->cost[endIndex]);
+					  previousPrefix.ResultWithUnreversedEnd());
 
-		if (this->revStr[endIndex] >= this->revStr[endIndex - 1])
+		if (lastString.ReversedString() >= previousPrefix.LastStringReversed())
 			res = min(res,
-					  previousPrefix.lastReversed
-						+ this->cost[endIndex]);
+					  previousPrefix.ResultWithReversedEnd());
 
-		return res;
+		return res == INF ? res : res + this->cost[ind];
 	}
 
-	string* GetReversedStrings ()
+	PrefixResult ResultForPrefix (const PrefixInfo& prefixInfo,
+								  const int& ind) const
 	{
-		string *res = new string[this->numberOfStrings];
-		for (int i = 0; i < this->numberOfStrings; ++i)
-		{
-			res[i] = this->str[i];
-			reverse (res[i].begin(), res[i].end());
-		}
+		ReversableString revStr = ReversableString(this->str[ind]);
 
-		return res;
+		return PrefixResult(this->PrefixResultWithUnreversedEnd(prefixInfo, revStr),
+							this->PrefixResultWithReversedEnd(prefixInfo, revStr, ind));
 	}
 
-	PrefixResult GetPrefixResult ()
+	long long ResultForEntireSequence () const
 	{
-		this->revStr = this->GetReversedStrings();
-		PrefixResult previousRes(0, this->cost[0]), currentRes;
+		PrefixInfo prefixInfo(this->str[0],
+							  PrefixResult(0, this->cost[0]));
 		
 		for (int i = 1; i < this->numberOfStrings; ++i)
-		{
-			currentRes = PrefixResult(this->GetResultForPrefixWithUnreversedEnd(i, previousRes),
-							 		  this->GetResultForPrefixWithReversedEnd(i, previousRes));
+			prefixInfo = PrefixInfo(this->str[i],
+									this->ResultForPrefix(prefixInfo, i));
 
-			previousRes = currentRes;
-		}
+		long long res = min(prefixInfo.ResultWithUnreversedEnd(),
+							prefixInfo.ResultWithReversedEnd());
 
-		return currentRes;
+		return res == INF ? -1 : res;
 	}
 
 public:
 	long long Result ()
 	{
 		if (this->result == NOT_COMPUTED)
-		{
-			PrefixResult pr = this->GetPrefixResult();
-			this->result = min(pr.lastUnreversed,
-							   pr.lastReversed);
-			this->result = (this->result == INF ? (long long)-1 : this->result);
-		}
+			this->result = this->ResultForEntireSequence();
 
 		return this->result;
 	}
 };
 
-
-void ReadStrings (const int& n, string str[])
-{
-	for (int i = 0; i < n; ++i)
-		cin >> str[i];
-}
-
-void ReadCosts (const int& n, int cost[])
-{
-	for (int i = 0; i < n; ++i)
-		cin >> cost[i];
-}
-
 int main ()
 {
 	ios::sync_with_stdio(false);
 
-	int n;
-	cin >> n;
-	int cost[n];
-	string str[n];
-	ReadCosts(n, cost);
-	ReadStrings(n, str);
-
-	TaskSolver ts(n, cost, str);
+	TaskSolver ts;
 	cout << ts.Result() << endl;
 
 	return 0;
