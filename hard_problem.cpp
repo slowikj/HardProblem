@@ -7,42 +7,44 @@ using namespace std;
 class TaskSolver
 {
 private:
-	static const int LAST_NORM = 0;
-	static const int LAST_REV = 1;
 	static const int MAXN = 1e5;
 	static const int MAXCOST = 1e9;
-	static const int NUMBER_OF_STATES = 2;
 	static const long long INF = (long long)MAXN * MAXCOST + 10;
+	static const long long NOT_COMPUTED = -INF;
 
 	int *cost;
 	string *str;
 	string *revStr;
 	int numberOfStrings;
-	long long **res;
+	long long result;
 
-	void CopyStrings (const int& numberOfStrings, string *str)
+	string* GetStringsCopy (const int& numberOfStrings, string *str)
 	{
-		this->str = new string[numberOfStrings];
+		string *copiedStr = new string[numberOfStrings];
 		for (int i = 0; i < numberOfStrings; ++i)
-			this->str[i] = str[i];
+			copiedStr[i] = str[i];
+
+		return copiedStr;
 	}
 
-	void CopyCosts (const int& numberOfStrings, int *cost)
+	int* GetCostsCopy (const int& numberOfStrings, int *cost)
 	{
-		this->cost = new int[numberOfStrings];
+		int *copiedCosts = new int[numberOfStrings];
 		for (int i = 0; i < numberOfStrings; ++i)
-			this->cost[i] = cost[i];
+			copiedCosts[i] = cost[i];
+
+		return copiedCosts;
 	}		
 
 public:
 	TaskSolver (const int& numberOfStrings, int *cost, string *str)
 	{
 		this->numberOfStrings = numberOfStrings;
-		this->CopyStrings(numberOfStrings, str);
-		this->CopyCosts(numberOfStrings, cost);
+		this->str = this->GetStringsCopy(numberOfStrings, str);
+		this->cost = this->GetCostsCopy(numberOfStrings, cost);
 
 		this->revStr = nullptr;
-		this->res = nullptr;
+		this->result = NOT_COMPUTED;
 	}
 
 	~TaskSolver ()
@@ -52,104 +54,94 @@ public:
 
 		if (this->revStr)
 			delete[] this->revStr;
-
-		if (this->res)
-		{
-			for (int i = 0; i < this->numberOfStrings; ++i)
-				if (this->res[i])
-					delete[] this->res[i];
-		}
 	}
 
 private:
-	void ComputeForUnreversedEnd (const int& endIndex)
+	struct PrefixResult
 	{
+		long long lastUnreversed;
+		long long lastReversed;
+
+		PrefixResult (long long unreversed = INF, long long reversed = INF)
+			: lastUnreversed(unreversed), lastReversed(reversed)
+		{
+		}
+	};
+
+	long long GetResultForPrefixWithUnreversedEnd (const int& endIndex,
+												   const PrefixResult& previousPrefix)
+	{
+		long long res = INF;
+
 		if (this->str[endIndex] >= this->str[endIndex - 1])
-			this->res[endIndex][LAST_NORM] = min(this->res[endIndex][LAST_NORM],
-												 this->res[endIndex - 1][LAST_NORM]);
+			res = min(res,
+					  previousPrefix.lastUnreversed);
 
 		if (this->str[endIndex] >= this->revStr[endIndex - 1])
-			this->res[endIndex][LAST_NORM] = min(this->res[endIndex][LAST_NORM],
-												 this->res[endIndex - 1][LAST_REV]);
+			res = min(res,
+					  previousPrefix.lastReversed);
+
+		return res;
 	}	
 
-	void ComputeForReversedEnd (const int& endIndex)
+	long long GetResultForPrefixWithReversedEnd (const int& endIndex,
+												 const PrefixResult& previousPrefix)
 	{
+		long long res = INF;
+
 		if (this->revStr[endIndex] >= this->str[endIndex - 1])
-			this->res[endIndex][LAST_REV] = min(this->res[endIndex][LAST_REV],
-												this->res[endIndex - 1][LAST_NORM] + this->cost[endIndex]);
+			res = min(res,
+					  previousPrefix.lastUnreversed
+						+ this->cost[endIndex]);
 
 		if (this->revStr[endIndex] >= this->revStr[endIndex - 1])
-			this->res[endIndex][LAST_REV] = min(this->res[endIndex][LAST_REV],
-												this->res[endIndex - 1][LAST_REV] + this->cost[endIndex]);
+			res = min(res,
+					  previousPrefix.lastReversed
+						+ this->cost[endIndex]);
+
+		return res;
 	}
 
-	void ComputeReversedStrings ()
+	string* GetReversedStrings ()
 	{
+		string *res = new string[this->numberOfStrings];
 		for (int i = 0; i < this->numberOfStrings; ++i)
 		{
-			this->revStr[i] = this->str[i];
-			reverse (this->revStr[i].begin(), this->revStr[i].end());
+			res[i] = this->str[i];
+			reverse (res[i].begin(), res[i].end());
 		}
+
+		return res;
 	}
 
-	void AssignInitialValues ()
+	PrefixResult GetPrefixResult ()
 	{
-		for (int i = 0; i < this->numberOfStrings; ++i)
-			this->res[i][0] = this->res[i][1] = INF;
-
-		this->res[0][LAST_NORM] = 0;
-		this->res[0][LAST_REV] = this->cost[0];
-	}
-
-	void CreateResArray ()
-	{
-		this->res = new long long*[this->numberOfStrings];
-		
-		for (int i = 0; i < this->numberOfStrings; ++i)
-			this->res[i] = new long long[NUMBER_OF_STATES];
-	}
-
-	void CreateRevStrArray()
-	{
-		this->revStr = new string[this->numberOfStrings];
-	}
-
-	void Initialize ()
-	{
-		this->CreateResArray();
-		this->AssignInitialValues();
-
-		this->CreateRevStrArray();
-		this->ComputeReversedStrings();
-	}
-
-	void ComputeResult ()
-	{
-		this->Initialize();
+		this->revStr = this->GetReversedStrings();
+		PrefixResult previousRes(0, this->cost[0]), currentRes;
 		
 		for (int i = 1; i < this->numberOfStrings; ++i)
 		{
-			this->ComputeForUnreversedEnd(i);
-			this->ComputeForReversedEnd(i);
-		}
-	}
+			currentRes = PrefixResult(this->GetResultForPrefixWithUnreversedEnd(i, previousRes),
+							 		  this->GetResultForPrefixWithReversedEnd(i, previousRes));
 
-	bool ResultIsNotComputed ()
-	{
-		return this->res == nullptr;
+			previousRes = currentRes;
+		}
+
+		return currentRes;
 	}
 
 public:
-	long long GetResult ()
+	long long Result ()
 	{
-		if (this->ResultIsNotComputed())
-			this->ComputeResult();
-	
-		long long tmpTotalRes = min(res[this->numberOfStrings - 1][LAST_NORM],
-								    res[this->numberOfStrings - 1][LAST_REV]);
+		if (this->result == NOT_COMPUTED)
+		{
+			PrefixResult pr = this->GetPrefixResult();
+			this->result = min(pr.lastUnreversed,
+							   pr.lastReversed);
+			this->result = (this->result == INF ? (long long)-1 : this->result);
+		}
 
-		return (tmpTotalRes == INF ? (long long)-1 : tmpTotalRes);
+		return this->result;
 	}
 };
 
@@ -178,7 +170,7 @@ int main ()
 	ReadStrings(n, str);
 
 	TaskSolver ts(n, cost, str);
-	cout << ts.GetResult() << endl;
+	cout << ts.Result() << endl;
 
 	return 0;
 }
