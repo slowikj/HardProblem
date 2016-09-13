@@ -4,8 +4,6 @@
 
 using namespace std;
 
-#define debug(x) cerr << #x << " = " << (x) << endl
-
 void ReadStrings (const int& n, string str[])
 {
 	for (int i = 0; i < n; ++i)
@@ -42,14 +40,20 @@ void Solve (const int& n, string str[], int cost[])
 		res[i][LAST_NORM] = res[i][LAST_REV] = INF;
 
 		if (str[i] >= str[i - 1])
-			res[i][LAST_NORM] = min(res[i][LAST_NORM], res[i - 1][LAST_NORM]);
+			res[i][LAST_NORM] = min(res[i][LAST_NORM],
+									res[i - 1][LAST_NORM]);
+
 		if (str[i] >= prevStrRev)
-			res[i][LAST_NORM] = min(res[i][LAST_NORM], res[i - 1][LAST_REV]);
+			res[i][LAST_NORM] = min(res[i][LAST_NORM],
+									res[i - 1][LAST_REV]);
 		
 		if (strRev >= str[i - 1])
-			res[i][LAST_REV] = min(res[i][LAST_REV], res[i - 1][LAST_NORM] + cost[i]);
+			res[i][LAST_REV] = min(res[i][LAST_REV],
+								   res[i - 1][LAST_NORM] + cost[i]);
+
 		if (strRev >= prevStrRev)
-			res[i][LAST_REV] = min(res[i][LAST_REV], res[i - 1][LAST_REV] + cost[i]);
+			res[i][LAST_REV] = min(res[i][LAST_REV],
+								   res[i - 1][LAST_REV] + cost[i]);
 	}
 
 	long long finalResult = min(res[n - 1][LAST_NORM], res[n - 1][LAST_REV]);
