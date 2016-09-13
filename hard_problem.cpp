@@ -28,9 +28,12 @@ void ComputeForUnreversedEnd (const int& prefixEnd,
 							  long long res[][2])
 {
 	if (currentStr >= previousStr)
-		res[prefixEnd][LAST_NORM] = min(res[prefixEnd][LAST_NORM], res[prefixEnd - 1][LAST_NORM]);
+		res[prefixEnd][LAST_NORM] = min(res[prefixEnd][LAST_NORM],
+										res[prefixEnd - 1][LAST_NORM]);
+
 	if (currentStr >= reversedPrevStr)
-		res[prefixEnd][LAST_NORM] = min(res[prefixEnd][LAST_NORM], res[prefixEnd - 1][LAST_REV]);
+		res[prefixEnd][LAST_NORM] = min(res[prefixEnd][LAST_NORM],
+										res[prefixEnd - 1][LAST_REV]);
 }
 
 void ComputeForReversedEnd (const int& prefixEnd,
@@ -39,9 +42,12 @@ void ComputeForReversedEnd (const int& prefixEnd,
 							int cost[], long long res[][2])
 {
 	if (reversedCurrentStr >= previousStr)
-		res[prefixEnd][LAST_REV] = min(res[prefixEnd][LAST_REV], res[prefixEnd - 1][LAST_NORM] + cost[prefixEnd]);
+		res[prefixEnd][LAST_REV] = min(res[prefixEnd][LAST_REV],
+									   res[prefixEnd - 1][LAST_NORM] + cost[prefixEnd]);
+
 	if (reversedCurrentStr >= reversedPreviousStr)
-		res[prefixEnd][LAST_REV] = min(res[prefixEnd][LAST_REV], res[prefixEnd - 1][LAST_REV] + cost[prefixEnd]);
+		res[prefixEnd][LAST_REV] = min(res[prefixEnd][LAST_REV],
+									   res[prefixEnd - 1][LAST_REV] + cost[prefixEnd]);
 }
 
 void ComputeReversedStrings (const int& n, string str[], string revStr[])
