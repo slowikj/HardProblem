@@ -2,14 +2,14 @@
 
 #include <string>
 #include "PrefixResult.h"
-#include "ReversableString.h"
+#include "ReversibleString.h"
 
 using namespace std;
 
 class PrefixInfo
 {
 private:
-	ReversableString lastString;
+	ReversibleString lastString;
 	PrefixResult result;
 
 public:

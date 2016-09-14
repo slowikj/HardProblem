@@ -11,7 +11,7 @@ class PrefixResultComputer
 private:
 	PrefixInfo previousPrefix;
 	int reversingCost;
-	ReversableString lastString;
+	ReversibleString lastString;
 
 	static const long long INF = LLONG_MAX;
 

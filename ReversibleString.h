@@ -4,13 +4,13 @@
 
 using namespace std;
 
-class ReversableString
+class ReversibleString
 {
 private:
 	string str, revStr;
 
 public:
-	ReversableString(const string& s);
+	ReversibleString(const string& s);
 
 	const string& String () const;
 	const string& ReversedString () const;
