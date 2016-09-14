@@ -4,13 +4,13 @@
 
 using namespace std;
 
-class ReversableString
+class ReversibleString
 {
 private:
 	string str, revStr;
 
 public:
-	ReversableString(const string& s)
+	ReversibleString(const string& s)
 		: str(s)
 	{
 		this->revStr = s;
@@ -45,7 +45,7 @@ struct PrefixResult
 
 class PrefixInfo
 {
-	ReversableString lastString;
+	ReversibleString lastString;
 	PrefixResult result;
 
 public:
@@ -153,7 +153,7 @@ public:
 
 private:
 	long long PrefixResultWithUnreversedEnd (const PrefixInfo& previousPrefix,
-											 const ReversableString& lastStr) const
+											 const ReversibleString& lastStr) const
 	{
 		long long res = INF;
 
@@ -169,7 +169,7 @@ private:
 	}	
 
 	long long PrefixResultWithReversedEnd (const PrefixInfo& previousPrefix,
-										   const ReversableString& lastString,
+										   const ReversibleString& lastString,
 									 	   const int& ind) const
 	{
 		long long res = INF;
@@ -188,7 +188,7 @@ private:
 	PrefixResult ResultForPrefix (const PrefixInfo& prefixInfo,
 								  const int& ind) const
 	{
-		ReversableString revStr = ReversableString(this->str[ind]);
+		ReversibleString revStr = ReversibleString(this->str[ind]);
 
 		return PrefixResult(this->PrefixResultWithUnreversedEnd(prefixInfo, revStr),
 							this->PrefixResultWithReversedEnd(prefixInfo, revStr, ind));
