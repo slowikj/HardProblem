@@ -79,6 +79,8 @@ private:
 	int reversingCost;
 	ReversableString lastString;
 
+	static const long long INF = LLONG_MAX;
+
 public:
 	PrefixResultComputer(const PrefixInfo& prevPref,
 						const int& revCost,
@@ -90,35 +92,33 @@ public:
 	}
 
 private:
-	long long ResultWithUnreversedEnd () const
+	long long ResultWithEnd(const string& s) const
 	{
-		long long res = LLONG_MAX;
+		long long res = INF;
 
-		if (this->lastString.String() >= this->previousPrefix.LastString())
+		if (s >= this->previousPrefix.LastString())
 			res = min(res,
 					  this->previousPrefix.ResultWithUnreversedEnd());
 
-		if (this->lastString.String() >= this->previousPrefix.LastStringReversed())
+		if (s >= this->previousPrefix.LastStringReversed())
 			res = min(res,
 					  this->previousPrefix.ResultWithReversedEnd());
 
 		return res;
 	}
 
+	long long ResultWithUnreversedEnd () const
+	{
+		return this->ResultWithEnd(this->lastString.String());
+	}
+
 	long long ResultWithReversedEnd () const
 	{
-		long long res = LLONG_MAX;
+		long long res = this->ResultWithEnd(this->lastString
+												 .ReversedString());
 
-		if (this->lastString.ReversedString() >= this->previousPrefix.LastString())
-			res = min(res,
-					  this->previousPrefix.ResultWithUnreversedEnd());
-
-		if (this->lastString.ReversedString() >= this->previousPrefix.LastStringReversed())
-			res = min(res,
-					  this->previousPrefix.ResultWithReversedEnd());
-
-		return res == LLONG_MAX ? res
-								: res + this->reversingCost;
+		return (res == INF ? res
+						   : res + this->reversingCost);
 	}
 
 public:
