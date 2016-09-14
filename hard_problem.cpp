@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <climits>
 
 using namespace std;
 
@@ -32,10 +33,6 @@ struct PrefixResult
 {
 	long long lastUnreversed;
 	long long lastReversed;
-
-	PrefixResult ()
-	{
-	}
 
 	PrefixResult (long long unreversed, long long reversed)
 		: lastUnreversed(unreversed), lastReversed(reversed)
@@ -75,13 +72,68 @@ public:
 	}
 };
 
+class PrefixResultComputer
+{
+private:
+	PrefixInfo previousPrefix;
+	int reversingCost;
+	ReversableString lastString;
+
+public:
+	PrefixResultComputer(const PrefixInfo& prevPref,
+						const int& revCost,
+						const string& curStr)
+		: previousPrefix(prevPref),
+		  reversingCost(revCost),
+		  lastString(curStr)
+	{
+	}
+
+private:
+	long long ResultWithUnreversedEnd () const
+	{
+		long long res = LLONG_MAX;
+
+		if (this->lastString.String() >= this->previousPrefix.LastString())
+			res = min(res,
+					  this->previousPrefix.ResultWithUnreversedEnd());
+
+		if (this->lastString.String() >= this->previousPrefix.LastStringReversed())
+			res = min(res,
+					  this->previousPrefix.ResultWithReversedEnd());
+
+		return res;
+	}
+
+	long long ResultWithReversedEnd () const
+	{
+		long long res = LLONG_MAX;
+
+		if (this->lastString.ReversedString() >= this->previousPrefix.LastString())
+			res = min(res,
+					  this->previousPrefix.ResultWithUnreversedEnd());
+
+		if (this->lastString.ReversedString() >= this->previousPrefix.LastStringReversed())
+			res = min(res,
+					  this->previousPrefix.ResultWithReversedEnd());
+
+		return res == LLONG_MAX ? res
+								: res + this->reversingCost;
+	}
+
+public:
+	PrefixInfo Result () const
+	{
+		return PrefixInfo(this->lastString.String(),
+						  PrefixResult(this->ResultWithUnreversedEnd(),
+									   this->ResultWithReversedEnd()));
+	}
+};
+
 class TaskSolver
 {
 private:
-	static const int MAXN = 1e5;
-	static const int MAXCOST = 1e9;
-	static const long long INF = (long long)MAXN * MAXCOST + 10;
-	static const long long NOT_COMPUTED = -INF;
+	static const long long NOT_COMPUTED = -5;
 
 	int *cost;
 	string *str;
@@ -117,7 +169,7 @@ public:
 	}
 
 private:
-	int* ReadCosts ()
+	int* ReadCosts () const
 	{
 		int *res = new int[this->numberOfStrings];
 		for (int i = 0; i < this->numberOfStrings; ++i)
@@ -126,7 +178,7 @@ private:
 		return res;
 	}
 
-	string* ReadStrings ()
+	string* ReadStrings () const
 	{
 		string *res = new string[this->numberOfStrings];
 		for (int i = 0; i < this->numberOfStrings; ++i)
@@ -152,61 +204,23 @@ public:
 	}
 
 private:
-	long long PrefixResultWithUnreversedEnd (const PrefixInfo& previousPrefix,
-											 const ReversableString& lastStr) const
-	{
-		long long res = INF;
-
-		if (lastStr.String() >= previousPrefix.LastString())
-			res = min(res,
-					  previousPrefix.ResultWithUnreversedEnd());
-
-		if (lastStr.String() >= previousPrefix.LastStringReversed())
-			res = min(res,
-					  previousPrefix.ResultWithReversedEnd());
-
-		return res;
-	}	
-
-	long long PrefixResultWithReversedEnd (const PrefixInfo& previousPrefix,
-										   const ReversableString& lastString,
-									 	   const int& ind) const
-	{
-		long long res = INF;
-
-		if (lastString.ReversedString() >= previousPrefix.LastString())
-			res = min(res,
-					  previousPrefix.ResultWithUnreversedEnd());
-
-		if (lastString.ReversedString() >= previousPrefix.LastStringReversed())
-			res = min(res,
-					  previousPrefix.ResultWithReversedEnd());
-
-		return res == INF ? res : res + this->cost[ind];
-	}
-
-	PrefixResult ResultForPrefix (const PrefixInfo& prefixInfo,
-								  const int& ind) const
-	{
-		ReversableString revStr = ReversableString(this->str[ind]);
-
-		return PrefixResult(this->PrefixResultWithUnreversedEnd(prefixInfo, revStr),
-							this->PrefixResultWithReversedEnd(prefixInfo, revStr, ind));
-	}
-
 	long long ResultForEntireSequence () const
 	{
 		PrefixInfo prefixInfo(this->str[0],
 							  PrefixResult(0, this->cost[0]));
-		
+
 		for (int i = 1; i < this->numberOfStrings; ++i)
-			prefixInfo = PrefixInfo(this->str[i],
-									this->ResultForPrefix(prefixInfo, i));
+		{
+			prefixInfo = PrefixResultComputer(prefixInfo,
+											  this->cost[i],
+											  this->str[i]
+											 ).Result();
+		}
 
 		long long res = min(prefixInfo.ResultWithUnreversedEnd(),
 							prefixInfo.ResultWithReversedEnd());
 
-		return res == INF ? -1 : res;
+		return res == LLONG_MAX ? -1 : res;
 	}
 
 public:
