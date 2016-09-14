@@ -5,13 +5,13 @@
 
 using namespace std;
 
-class ReversableString
+class ReversibleString
 {
 private:
 	string str, revStr;
 
 public:
-	ReversableString(const string& s)
+	ReversibleString(const string& s)
 		: str(s)
 	{
 		this->revStr = s;
@@ -42,7 +42,7 @@ struct PrefixResult
 
 class PrefixInfo
 {
-	ReversableString lastString;
+	ReversibleString lastString;
 	PrefixResult result;
 
 public:
@@ -77,7 +77,7 @@ class PrefixResultComputer
 private:
 	PrefixInfo previousPrefix;
 	int reversingCost;
-	ReversableString lastString;
+	ReversibleString lastString;
 
 public:
 	PrefixResultComputer(const PrefixInfo& prevPref,
