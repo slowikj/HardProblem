@@ -130,15 +130,13 @@ public:
 	}
 };
 
-class TaskSolver
+class TaskData
 {
 private:
-	static const long long NOT_COMPUTED = -5;
 
 	int *cost;
 	string *str;
 	int numberOfStrings;
-	long long result;
 
 	string* GetStringsCopy (const int& numberOfStrings, string *str) const
 	{
@@ -156,19 +154,8 @@ private:
 			copiedCosts[i] = cost[i];
 
 		return copiedCosts;
-	}	
-
-public:
-	TaskSolver (const int& numberOfStrings, int *cost, string *str)
-	{
-		this->numberOfStrings = numberOfStrings;
-		this->str = this->GetStringsCopy(numberOfStrings, str);
-		this->cost = this->GetCostsCopy(numberOfStrings, cost);
-
-		this->result = NOT_COMPUTED;
 	}
 
-private:
 	int* ReadCosts () const
 	{
 		int *res = new int[this->numberOfStrings];
@@ -188,32 +175,73 @@ private:
 	}
 
 public:
-	TaskSolver ()
+	TaskData (const int& numberOfStrings, int *cost, string *str)
+	{
+		this->numberOfStrings = numberOfStrings;
+		this->str = this->GetStringsCopy(numberOfStrings, str);
+		this->cost = this->GetCostsCopy(numberOfStrings, cost);
+	}
+
+	TaskData ()
 	{
 		cin >> this->numberOfStrings;
 		this->cost = this->ReadCosts();
 		this->str = this->ReadStrings();
-
-		this->result = NOT_COMPUTED;
 	}
 
-	~TaskSolver ()
+	~TaskData ()
 	{
 		delete[] this->cost;
 		delete[] this->str;
 	}
 
+	const string& String(int index) const
+	{
+		return this->str[index];
+	}
+
+	const int& Cost(int index) const
+	{
+		return this->cost[index];
+	}
+
+	const int& NumberOfStrings() const
+	{
+		return this->numberOfStrings;
+	}
+};
+
+class TaskSolver
+{
+private:
+	TaskData taskData;
+	
+	static const long long NOT_COMPUTED = -5;
+	long long result = NOT_COMPUTED;
+
+public:
+	TaskSolver (const int& numberOfStrings, int *cost, string *str)
+		: taskData(numberOfStrings, cost, str)
+	{
+	}
+
+	TaskSolver ()
+		: taskData()
+	{
+	}
+
 private:
 	long long ResultForEntireSequence () const
 	{
-		PrefixInfo prefixInfo(this->str[0],
-							  PrefixResult(0, this->cost[0]));
+		PrefixInfo prefixInfo(this->taskData.String(0),
+							  PrefixResult(0, this->taskData.Cost(0)));
 
-		for (int i = 1; i < this->numberOfStrings; ++i)
+		int sequenceLength = this->taskData.NumberOfStrings();
+		for (int i = 1; i < sequenceLength; ++i)
 		{
 			prefixInfo = PrefixResultComputer(prefixInfo,
-											  this->cost[i],
-											  this->str[i]
+											  this->taskData.Cost(i),
+											  this->taskData.String(i)
 											 ).Result();
 		}
 
