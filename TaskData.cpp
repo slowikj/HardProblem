@@ -20,12 +20,12 @@ TaskData::TaskData ()
 
 vector<int> TaskData::_GetReadCosts (const int& numberOfCosts)
 {
-	return _GetReadSequence<int>(numberOfCosts);
+	return move(_GetReadSequence<int>(numberOfCosts));
 }
 
 vector<string> TaskData::_GetReadStrings (const int& numberOfStrings)
 {
-	return _GetReadSequence<string>(numberOfStrings);
+	return move(_GetReadSequence<string>(numberOfStrings));
 }
 
 template <class T>
