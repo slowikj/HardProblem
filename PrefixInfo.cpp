@@ -1,27 +1,27 @@
 #include "PrefixInfo.h"
 
 PrefixInfo::PrefixInfo (const string& last, const PrefixResult& pr)
-	: lastString(last), result(pr)
+	: _lastString(last), _result(pr)
 {
 }
 
 const string& PrefixInfo::LastString () const
 {
-	return this->lastString.String();
+	return _lastString.String();
 }
 
 const string& PrefixInfo::LastStringReversed () const
 {
-	return this->lastString.ReversedString();
+	return _lastString.ReversedString();
 }
 
 long long PrefixInfo::ResultWithUnreversedEnd () const
 {
-	return this->result.lastUnreversed;
+	return _result.lastUnreversed;
 }
 
 long long PrefixInfo::ResultWithReversedEnd () const
 {
-	return this->result.lastReversed;
+	return _result.lastReversed;
 }
 

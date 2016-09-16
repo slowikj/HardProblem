@@ -1,33 +1,28 @@
 #include <string>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
 class TaskData
 {
 private:
-	int *cost;
-	string *str;
-	int numberOfStrings;
+	vector<int> _costs;
+	vector<string> _str;
 
 public:
-	TaskData (const int& numberOfStrings, int *cost, string *str);
-	
-private:
-	string* GetStringsCopy (const int& numberOfStrings, string *str) const;
-	int* GetCostsCopy (const int& numberOfStrings, int *cost) const;
-	
-public:
+	TaskData (const int& numberOfStrings, const int *costs, const string *str);
 	TaskData ();
 
 private:
-	int* ReadCosts () const;
-	string* ReadStrings () const;
+	vector<int> _GetReadCosts (const int& numberOfCosts);
+	vector<string> _GetReadStrings (const int& numberOfStrings);
+
+	template<class T>
+	vector<T> _GetReadSequence (const int& n);
 	
 public:
-	~TaskData ();
-
-	const string& String(int index) const;
-	const int& Cost(int index) const;
-	const int& NumberOfStrings() const;
+	const string& String (const int& index) const;
+	const int& Cost (const int& index) const;
+	int NumberOfStrings () const;
 };

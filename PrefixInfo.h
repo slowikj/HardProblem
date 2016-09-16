@@ -9,8 +9,8 @@ using namespace std;
 class PrefixInfo
 {
 private:
-	ReversibleString lastString;
-	PrefixResult result;
+	ReversibleString _lastString;
+	PrefixResult _result;
 
 public:
 	PrefixInfo (const string& last, const PrefixResult& pr);

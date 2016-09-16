@@ -1,72 +1,58 @@
 #include "TaskData.h"
+#include <algorithm>
 
-TaskData::TaskData (const int& numberOfStrings, int *cost, string *str)
+using namespace std;
+
+TaskData::TaskData (const int& numberOfStrings, const int *costs, const string *str)
 {
-	this->numberOfStrings = numberOfStrings;
-	this->str = this->GetStringsCopy(numberOfStrings, str);
-	this->cost = this->GetCostsCopy(numberOfStrings, cost);
-}
-
-string* TaskData::GetStringsCopy (const int& numberOfStrings, string *str) const
-{
-	string *copiedStr = new string[numberOfStrings];
-	for (int i = 0; i < numberOfStrings; ++i)
-		copiedStr[i] = str[i];
-
-	return copiedStr;
-}
-
-int* TaskData::GetCostsCopy (const int& numberOfStrings, int *cost) const
-{
-	int *copiedCosts = new int[numberOfStrings];
-	for (int i = 0; i < numberOfStrings; ++i)
-		copiedCosts[i] = cost[i];
-
-	return copiedCosts;
+	_costs.assign(costs, costs + numberOfStrings);
+	_str.assign(str, str + numberOfStrings);
 }
 
 TaskData::TaskData ()
 {
-	cin >> this->numberOfStrings;
-	this->cost = this->ReadCosts();
-	this->str = this->ReadStrings();
+	int numberOfStrings;
+	cin >> numberOfStrings;
+
+	_costs = _GetReadCosts(numberOfStrings);
+	_str = _GetReadStrings(numberOfStrings);
 }
 
-int* TaskData::ReadCosts () const
+vector<int> TaskData::_GetReadCosts (const int& numberOfCosts)
 {
-	int *res = new int[this->numberOfStrings];
-	for (int i = 0; i < this->numberOfStrings; ++i)
-		cin >> res[i];
-
-	return res;
+	return _GetReadSequence<int>(numberOfCosts);
 }
 
-string* TaskData::ReadStrings () const
+vector<string> TaskData::_GetReadStrings (const int& numberOfStrings)
 {
-	string *res = new string[this->numberOfStrings];
-	for (int i = 0; i < this->numberOfStrings; ++i)
-		cin >> res[i];
-
-	return res;
+	return _GetReadSequence<string>(numberOfStrings);
 }
 
-TaskData::~TaskData ()
+template <class T>
+vector<T> TaskData::_GetReadSequence (const int& n)
 {
-	delete[] this->cost;
-	delete[] this->str;
+	vector<T> res(n);	
+	for_each(res.begin(), res.end(),
+			 [](T& elem)->void
+			 {
+			 	cin >> elem;
+			 }
+			);
+
+	return move(res);
 }
 
-const string& TaskData::String(int index) const
+const string& TaskData::String (const int& index) const
 {
-	return this->str[index];
+	return _str[index];
 }
 
-const int& TaskData::Cost(int index) const
+const int& TaskData::Cost (const int& index) const
 {
-	return this->cost[index];
+	return _costs[index];
 }
 
-const int& TaskData::NumberOfStrings() const
+int TaskData::NumberOfStrings () const
 {
-	return this->numberOfStrings;
+	return _str.size();
 }

@@ -1,26 +1,26 @@
 #include "TaskSolver.h"
 
 TaskSolver::TaskSolver (const int& numberOfStrings, int *cost, string *str)
-	: taskData(numberOfStrings, cost, str)
+	: _taskData(numberOfStrings, cost, str)
 {
 }
 
 TaskSolver::TaskSolver ()
-	: taskData()
+	: _taskData()
 {
 }
 
-long long TaskSolver::ResultForEntireSequence () const
+long long TaskSolver::_ResultForEntireSequence () const
 {
-	PrefixInfo prefixInfo(this->taskData.String(0),
-						  PrefixResult(0, this->taskData.Cost(0)));
+	PrefixInfo prefixInfo(_taskData.String(0),
+						  PrefixResult(0, _taskData.Cost(0)));
 
-	int sequenceLength = this->taskData.NumberOfStrings();
+	int sequenceLength = _taskData.NumberOfStrings();
 	for (int i = 1; i < sequenceLength; ++i)
 	{
 		prefixInfo = PrefixResultComputer(prefixInfo,
-										  this->taskData.Cost(i),
-										  this->taskData.String(i)
+										  _taskData.Cost(i),
+										  _taskData.String(i)
 										 ).Result();
 	}
 
@@ -32,8 +32,8 @@ long long TaskSolver::ResultForEntireSequence () const
 
 long long TaskSolver::Result ()
 {
-	if (this->result == NOT_COMPUTED)
-		this->result = this->ResultForEntireSequence();
+	if (_result == NOT_COMPUTED)
+		_result = _ResultForEntireSequence();
 
-	return this->result;
+	return _result;
 }

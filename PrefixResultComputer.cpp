@@ -1,46 +1,46 @@
 #include "PrefixResultComputer.h"
 
 PrefixResultComputer::PrefixResultComputer(const PrefixInfo& prevPref,
-					 const int& revCost,
-					 const string& curStr)
-	: previousPrefix(prevPref),
-	  reversingCost(revCost),
-	  lastString(curStr)
+									 	   const int& revCost,
+										   const string& curStr)
+	: _previousPrefix(prevPref),
+	  _reversingCost(revCost),
+	  _lastString(curStr)
 {
 }
 
 PrefixInfo PrefixResultComputer::Result () const
 {
-	return PrefixInfo(this->lastString.String(),
-					  PrefixResult(this->ResultWithUnreversedEnd(),
-								   this->ResultWithReversedEnd()));
+	return PrefixInfo(_lastString.String(),
+					  PrefixResult(_ResultWithUnreversedEnd(),
+								   _ResultWithReversedEnd()));
 }
 
-long long PrefixResultComputer::ResultWithUnreversedEnd () const
+long long PrefixResultComputer::_ResultWithUnreversedEnd () const
 {
-	return this->ResultWithEnd(this->lastString.String());
+	return _ResultWithEnd(_lastString.String());
 }
 
-long long PrefixResultComputer::ResultWithReversedEnd () const
+long long PrefixResultComputer::_ResultWithReversedEnd () const
 {
-	long long res = this->ResultWithEnd(this->lastString
-											 .ReversedString());
+	long long res = _ResultWithEnd(_lastString
+								   .ReversedString());
 
 	return (res == INF ? res
-					   : res + this->reversingCost);
+					   : res + _reversingCost);
 }
 
-long long PrefixResultComputer::ResultWithEnd(const string& s) const
+long long PrefixResultComputer::_ResultWithEnd(const string& s) const
 {
 	long long res = INF;
 
-	if (s >= this->previousPrefix.LastString())
+	if (s >= _previousPrefix.LastString())
 		res = min(res,
-				  this->previousPrefix.ResultWithUnreversedEnd());
+				  _previousPrefix.ResultWithUnreversedEnd());
 
-	if (s >= this->previousPrefix.LastStringReversed())
+	if (s >= _previousPrefix.LastStringReversed())
 		res = min(res,
-				  this->previousPrefix.ResultWithReversedEnd());
+				  _previousPrefix.ResultWithReversedEnd());
 
 	return res;
 }

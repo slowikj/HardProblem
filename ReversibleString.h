@@ -7,7 +7,7 @@ using namespace std;
 class ReversibleString
 {
 private:
-	string str, revStr;
+	string _str, _revStr;
 
 public:
 	ReversibleString(const string& s);
