@@ -1,5 +1,5 @@
 # HardProblem
-The solution to a codeforces's algorithmic task (dynamic programming)
+The solution to [a codeforces's algorithmic task](http://codeforces.com/problemset/problem/706/C) (dynamic programming)
 
 Task
 ----
